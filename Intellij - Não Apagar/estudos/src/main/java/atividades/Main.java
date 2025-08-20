@@ -39,18 +39,18 @@ public class Login {
     }
 
     private static void selecionarMoeda(TelaHelper tela, String moeda, boolean origem) {
-        By botaoBy = origem ?
+        By botao = origem ?
                 By.xpath("//button[@id='sourceSelectedCurrency']") :
                 By.xpath("//button[@id='targetSelectedCurrency']");
 
-        By inputBy = origem ?
+        By input = origem ?
                 By.xpath("//input[@id='sourceSelectedCurrencySearch']") :
                 By.xpath("//input[@id='targetSelectedCurrencySearch']");
 
         try {
-            tela.abrirDropdownMoeda(botaoBy, 40);
-            tela.digitarMoeda(inputBy, moeda, 40);
-            tela.confirmarSelecaoMoeda(moeda, 40, botaoBy);
+            tela.abrirDropdownMoeda(botao, 40);
+            tela.digitarMoeda(input, moeda, 40);
+            tela.confirmarSelecaoMoeda(moeda, 40, botao);
         } catch (InterruptedException e) {
             System.out.println("Erro ao digitar moeda: " + e.getMessage());
             Thread.currentThread().interrupt();
