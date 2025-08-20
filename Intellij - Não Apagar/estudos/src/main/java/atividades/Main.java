@@ -30,7 +30,7 @@ public class Login {
             } else if ((valor = tela.obterAtributo(valorCambio, "aria-label", 40)) != null && !valor.isEmpty()) {
                 System.out.println("💱 Cotação atual (via aria-label): 1 USD = " + valor);
             } else {
-                System.err.println("❌ Não foi possível obter o valor do câmbio.");
+                System.out.printf("❌ Não foi possível obter o valor do câmbio.");
             }
 
         } finally {
