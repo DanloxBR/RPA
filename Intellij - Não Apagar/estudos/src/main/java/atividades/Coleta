@@ -18,7 +18,6 @@ public class Coleta {
 
         try {
             TelaHelper.navegar("https://ayltoninacio.com.br/blog/tabela-cores-html-css-hexadecimal-nome-rgb");
-            TelaHelper.maximizar();
 
             WebElement tabela = TelaHelper.esperarVisibilidade(By.xpath("//table[1]"), 10);
 
