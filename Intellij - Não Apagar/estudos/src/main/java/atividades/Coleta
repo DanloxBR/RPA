@@ -32,23 +32,19 @@ public class Coleta {
                     CSVWriter csvWriter = new CSVWriter(writer)
             ) {
                 for (WebElement linha : linhas) {
-                    // Primeiro tenta encontrar <th>, senão tenta <td>
+                    
                     List<WebElement> colunas = linha.findElements(By.xpath(".//th"));
                     if (colunas.isEmpty()) {
                         colunas = linha.findElements(By.xpath(".//td"));
                     }
-
                     String[] dados = new String[colunas.size()];
                     for (int i = 0; i < colunas.size(); i++) {
                         dados[i] = colunas.get(i).getText().trim();
                     }
-
                     csvWriter.writeNext(dados);
                 }
-
                 System.out.println("✅ Arquivo '" + arquivo.getAbsolutePath() + "' criado com sucesso!");
             }
-
         } catch (Exception e) {
             System.err.println("❌ Erro durante a execução:");
             e.printStackTrace();
