@@ -7,10 +7,8 @@ Este projeto é um **RPA (Robotic Process Automation)** desenvolvido em **Java**
 ## 🛠️ Tecnologias Utilizadas
 
 - **Linguagem:** Java 8   
-- **Frameworks:** Spring Boot, Selenium, etc.  
-- **Build:** Maven  
-- **Banco de dados:** MySQL / PostgreSQL  
-- **Outros:** GitHub
+- **Frameworks:** Selenium.  
+- **Build:** Maven   
 
 ---
 
