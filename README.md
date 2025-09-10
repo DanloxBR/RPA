@@ -11,6 +11,9 @@ Este projeto é um **RPA (Robotic Process Automation)** desenvolvido em **Java**
 - **Build:** Maven   
 
 ---
+#Meu artigo postado na plataforma Dio
+
+https://web.dio.me/articles/automacao-em-java-4555108c53a5?back=/articles
 
 ## 📦 Como Executar
 
