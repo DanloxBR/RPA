@@ -32,17 +32,16 @@ public class AmazonBrasil {
             for (int i = 0; i < Math.min(20, produtos.size()); i++) {
                 WebElement produtoCard = produtos.get(i);
 
-                String nome = produtoCard.findElement(By.xpath("//h2[@class=\"a-size-base-plus a-spacing-none a-color-base a-text-normal\"]")).getText();
+                String nome = produtoCard.findElement(By.xpath(".//h2[@class=\"a-size-base-plus a-spacing-none a-color-base a-text-normal\"]")).getText();
 
                 String preco = "Indisponível";
                 try {
-                    preco = produtoCard.findElement(By.xpath("span[class=\"a-price-whole\"]")).getText();
+                    preco = produtoCard.findElement(By.xpath(".//span[@class=\"a-price-whole\"]")).getText();
+
                 } catch (Exception e) {
                 }
-
-                System.out.println((i + 1) + " = " + nome + " | " + preco);
+                System.out.println((i + 1) + " = " + nome + " | R$: " + preco);
             }
-
         } finally {
             if (driver != null) {
                 driver.quit();
