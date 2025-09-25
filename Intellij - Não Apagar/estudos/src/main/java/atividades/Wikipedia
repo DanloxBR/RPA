@@ -1,0 +1,41 @@
+package com.dio.atividade;
+
+import com.bringto.selenium.DriverFactory;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class Wikipedia {
+    public static void main(String[] args) {
+        WebDriver driver = null;
+
+        try {
+            driver = DriverFactory.getDriver();
+            driver.get("https://www.wikipedia.org/");
+
+            WebDriverWait wait = new WebDriverWait(driver, 15);
+
+            WebElement busca = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@id=\"searchInput\"]")));
+            busca.sendKeys("Java (linguagem de programação)");
+            busca.sendKeys(Keys.ENTER);
+
+            WebElement tema = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h1")));
+
+            WebElement primeiroParagrafo = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"mw-content-text\"]/div[1]/p[1]")));
+
+            System.out.println("Tema :" + tema.getText() +
+                               " \nTexto capturado :" + primeiroParagrafo.getText());
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (driver != null) {
+                driver.quit();
+            }
+        }
+    }
+}
