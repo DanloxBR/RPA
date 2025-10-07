@@ -1,0 +1,60 @@
+package com.bringto.csv;
+
+import com.bringto.selenium.DriverFactory;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import com.opencsv.CSVWriter;
+
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+
+public class Salvar {
+    public static void main(String[] args) {
+        WebDriver driver = null;
+
+        try {
+            driver = DriverFactory.getDriver();
+            driver.get("https://ayltoninacio.com.br/blog/tabela-cores-html-css-hexadecimal-nome-rgb");
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebElement tabelaCores = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//table[1]")));
+
+            List<WebElement> linhasDaTabela = tabelaCores.findElements(By.xpath(".//tr"));
+
+            try (Writer arquivoSaida = new OutputStreamWriter(new FileOutputStream("tabela.csv"), StandardCharsets.UTF_8);
+                 CSVWriter escritorCSV = new CSVWriter(arquivoSaida)) {
+
+                String[] cabecalho = {" |Nome da Cor | Código Hexadecimal | Código RGB | "};
+                escritorCSV.writeNext(cabecalho);
+
+                for (int i = 1; i < linhasDaTabela.size(); i++) {
+                    WebElement linha = linhasDaTabela.get(i);
+                    List<WebElement> colunas = linha.findElements(By.xpath(".//td"));
+                    if (colunas.size() < 3) continue;
+
+                    String nomeCor = colunas.get(0).getText().trim();
+                    String codigoHex = colunas.get(1).getText().trim();
+                    String codigoRGB = colunas.get(2).getText().trim();
+
+                    String[] dadosLinha = {nomeCor, codigoHex, codigoRGB};
+                    escritorCSV.writeNext(dadosLinha);
+                }
+                System.out.println("Arquivo CSV criado com sucesso!");
+            }
+        } catch (Exception e) {
+            System.err.println("Ocorreu um erro durante a execução:");
+            e.printStackTrace();
+        } finally {
+            if (driver != null) {
+                driver.quit();
+            }
+        }
+    }
+}
