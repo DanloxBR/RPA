@@ -25,11 +25,11 @@ public class Login {
 
             String valor = TelaHelper.obterTexto(valorCambio, 40);
             if (valor != null && !valor.isEmpty()) {
-                System.out.println("💱 Cotação atual: 1 USD = " + valor);
+                System.out.println(" Cotação atual: 1 USD = " + valor);
             } else if ((valor = TelaHelper.obterAtributo(valorCambio, "aria-label", 40)) != null && !valor.isEmpty()) {
-                System.out.println("💱 Cotação atual (via aria-label): 1 USD = " + valor);
+                System.out.println(" Cotação atual (via aria-label): 1 USD = " + valor);
             } else {
-                System.out.println("❌ Não foi possível obter o valor do câmbio.");
+                System.out.println(" Não foi possível obter o valor do câmbio.");
             }
 
         } finally {
