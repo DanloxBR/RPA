@@ -1,0 +1,175 @@
+package com.bringto.dados;
+
+import com.bringto.selenium.DriverFactory;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.sql.*;
+import java.time.Duration;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class Banco {
+
+    public static void main(String[] args) {
+        
+        String dbUrl = "jdbc:postgresql://localhost:5432/Robot";
+        String usuario = "postgres";
+        String senha = "0602";
+
+        WebDriver driver = DriverFactory.getDriver();
+
+        try {
+            Class.forName("org.postgresql.Driver");
+
+            try (Connection conn = DriverManager.getConnection(dbUrl, usuario, senha)) {
+
+                driver.get("https://www.sp.senai.br/");
+
+                driver.findElement(By.xpath("//a[text()='Cursos']")).click();
+                driver.findElement(By.xpath("//a[text()='Metalurgia e Soldagem']")).click();
+                driver.findElement(By.xpath("//div[@id='v-pills-9031']//li//a//b[contains(text(), 'Cursos Livres')]")).click();
+
+                navegarEPegarCursos(driver, conn);
+
+                listarCincoPrimeirosCursos(conn);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (driver != null) {
+                driver.quit();
+            }
+        }
+    }
+
+    private static void navegarEPegarCursos(WebDriver driver, Connection conn) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        int paginaAtual = 0;
+        int maxPaginas = 10; 
+
+        while (paginaAtual < maxPaginas) {
+               paginaAtual++;
+            
+            extrairCurso(driver, conn);
+
+            try {
+                WebElement botaoProximo = driver.findElement(By.xpath("//button[contains(text(), 'Próximo')]"));
+                
+                String disabled = botaoProximo.getAttribute("disabled");
+                if ((disabled != null && (disabled.equals("true") || disabled.equals("disabled"))) || !botaoProximo.isDisplayed()) {
+                    break;
+                }
+                
+                WebElement containerCursos = driver.findElement(By.xpath("//*[@id='card-cursos']"));
+                String textoAntes = containerCursos.getText().trim();
+
+                botaoProximo.click();
+
+                wait.until(ExpectedConditions.not(
+                        ExpectedConditions.textToBePresentInElement(containerCursos, textoAntes)));
+
+            } catch (Exception e) {
+                break;
+            }
+        }
+    }
+
+    private static void extrairCurso(WebDriver driver, Connection conn) {
+        try {
+            List<WebElement> cards = driver.findElements(
+                    By.xpath("//*[@id='card-cursos']//div[contains(concat(' ', normalize-space(@class), ' '), ' card ')]"));
+
+            for (WebElement card : cards) {
+                try {
+                    String nome = card.findElement(
+                                    By.xpath(".//h5[contains(concat(' ', normalize-space(@class), ' '), ' card-title ')]")).getText().trim();
+
+                    String textoCompleto = card.getText().toLowerCase();
+
+                    String modalidade = (textoCompleto.contains("distancia") || textoCompleto.contains("ead"))
+                            ? "EAD"
+                            : "Presencial";
+
+                    String cargaTexto = "";
+                    for (String linha : textoCompleto.split("\n")) {
+                        String linhaNorm = linha.toLowerCase().replace("á", "a");
+                        if (linhaNorm.contains("carga horaria")) {
+                            cargaTexto = linha;
+                            break;
+                        }
+                    }
+
+                    int cargaHoraria = extrairNumero(cargaTexto);
+
+                    System.out.println("\n--- Curso Encontrado ---");
+                    System.out.println("Nome: " + nome);
+                    System.out.println("Modalidade: " + modalidade);
+                    System.out.println("Carga Horária: " + cargaHoraria + " horas");
+                    
+                    String checkSql = "SELECT COUNT(*) FROM cursos WHERE nome = ? AND modalidade = ?";
+                    try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                        checkStmt.setString(1, nome);
+                        checkStmt.setString(2, modalidade);
+                        try (ResultSet rs = checkStmt.executeQuery()) {
+                            rs.next();
+                            if (rs.getInt(1) == 0) {
+                                String insertSql = "INSERT INTO cursos (nome, modalidade, carga_horaria) VALUES (?, ?, ?)";
+                                try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+                                    stmt.setString(1, nome);
+                                    stmt.setString(2, modalidade);
+                                    stmt.setInt(3, cargaHoraria);
+                                    stmt.executeUpdate();
+                                    System.out.println("Curso inserido com sucesso!");
+                                }
+                            } else {
+                                System.out.println("Curso já existente no banco.");
+                            }
+                        }
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar card: " + e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Erro ao extrair cursos: " + e.getMessage());
+        }
+    }
+
+    private static int extrairNumero(String texto) {
+        Pattern pattern = Pattern.compile("(\\d+)");
+        Matcher matcher = pattern.matcher(texto);
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : 0;
+    }
+
+    private static void listarCincoPrimeirosCursos(Connection conn) {
+        System.out.println("\n=== 5 Primeiros Cursos no Banco ===");
+        String sql = "SELECT nome, modalidade, carga_horaria FROM cursos ORDER BY nome LIMIT 5";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            int count = 1;
+            while (rs.next()) {
+                System.out.printf(
+                        "\n---------------------------\n" +
+                                "Curso #%d\n" +
+                                "Nome: %s\n" +
+                                "Modalidade: %s\n" +
+                                "Carga Horária: %d horas\n",
+                        count++, rs.getString("nome"),
+                        rs.getString("modalidade"),
+                        rs.getInt("carga_horaria"));
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao listar cursos: " + e.getMessage());
+        }
+    }
+}
