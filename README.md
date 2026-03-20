@@ -1,4 +1,4 @@
-# 🤖 Automação RPA 
+# 🤖 Automação/RPA 
 
 Este projeto é um **RPA (Robotic Process Automation)** desenvolvido em **Java**, com o objetivo de automatizar tarefas repetitivas e reduzir erros humanos.  
 
